@@ -8,7 +8,7 @@ A unified interface encapsulated for all supported music platforms. Arguments su
 - **music_sources** (`list[str]`, optional):  A list of music client names to be enabled. 
   Each name must be a key registered in `MusicClientBuilder.REGISTERED_MODULES`.  
   If left empty, the following default sources are used:  
-  `["MiguMusicClient", "NeteaseMusicClient", "KuwoMusicClient", "KugouMusicClient", "QQMusicClient", "QianqianMusicClient"]`.
+  `["MiguMusicClient", "NeteaseMusicClient", "QQMusicClient"]`.
 
 - **init_music_clients_cfg** (`dict[str, dict]`, optional): Per-client initialization configuration.  
   The outer dict is keyed by music source name (e.g. `"NeteaseMusicClient"`), and each value is a dict that overrides the default config:
@@ -26,6 +26,8 @@ A unified interface encapsulated for all supported music platforms. Arguments su
       "default_search_cookies": {},
       "default_download_cookies": {},
       "type": music_source,
+      "search_size_per_page": 10,
+      "strict_limit_search_size_per_page": True,
   }
   ```
   Any keys you provide will overwrite the defaults for that specific source only.
@@ -111,13 +113,14 @@ Thread settings and request overrides are automatically taken from `MusicClient.
 - `musicdl.modules.sources.tidal.TIDALMusicClient`
 - `musicdl.modules.sources.youtube.YouTubeMusicClient`
 - `musicdl.modules.sources.apple.AppleMusicClient`
+- `musicdl.modules.sources.mp3juice.MP3JuiceMusicClient`
 
 End users usually **do not** instantiate `BaseMusicClient` directly, but instead use one of the specific clients above.
 The methods documented here describe the common behavior of all these clients.
 Arguments supported when initializing this class include:
 
 - **search_size_per_source** (`int`, default `5`):  
-  Maximum number of search results (or pages) to fetch per source.
+  Maximum number of search results to fetch per source.
   
 - **auto_set_proxies** (`bool`, default `False`):  
   If `True`, automatically obtain proxies from `proxy_sources` using `freeproxy.ProxiedSessionClient` (details refer to [FreeProxy](https://github.com/CharlesPikachu/freeproxy/tree/master)) for each request.
@@ -152,6 +155,16 @@ Arguments supported when initializing this class include:
 
 - **default_download_cookies** (`dict` or `None`, default `{}`):  
   Default cookies used for `BaseMusicClient.download` requests.
+
+- **search_size_per_page** (`int`, default `10`):  
+  When searching for songs, if `search_size_per_source` is greater than `search_size_per_page`, 
+  the downloader will send paginated requests to the corresponding sites to retrieve the search results, 
+  with each page containing `search_size_per_page` songs.
+
+- **strict_limit_search_size_per_page** (`bool`, default `True`):  
+  Some sites do not allow `search_size_per_page` to control how many songs are returned per request, 
+  which may cause the final number of search results from that site to exceed `search_size_per_source`. 
+  Setting this parameter to `True` enforces that the total number of results is less than or equal to `search_size_per_source`.
 
 #### `BaseMusicClient.search(keyword: str, num_threadings=5, request_overrides=None, rule=None)`
 
