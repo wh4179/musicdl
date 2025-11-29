@@ -26,8 +26,7 @@ Options:
   -m, --music-sources, --music_sources TEXT
                                   The music search and download sources.
                                   [default: MiguMusicClient,NeteaseMusicClient
-                                  ,KuwoMusicClient,KugouMusicClient,QQMusicCli
-                                  ent,QianqianMusicClient]
+                                  ,QQMusicClient]
   -i, --init-music-clients-cfg, --init_music_clients_cfg TEXT
                                   Config such as `work_dir` for each music
                                   client as a JSON string.
