@@ -88,11 +88,29 @@ class GequbaoMusicClient(BaseMusicClient):
                 if not isvalidresp(resp=resp): continue
                 download_result['api/play-url'] = resp2json(resp=resp)
                 download_url = safeextractfromdict(download_result['api/play-url'], ['data', 'url'], '')
-                if not download_url: continue
+                quark_download_urls, parsed_quark_download_url = download_result.get('mp3_extra_urls', []), ''
+                for quark_download_url in quark_download_urls:
+                    try:
+                        quark_wav_download_url = quark_download_url['share_link']
+                        parsed_quark_download_url = QuarkParser.parsefromurl(quark_wav_download_url, **self.quark_parser_config)
+                        break
+                    except:
+                        parsed_quark_download_url = ''
+                        continue
+                if not download_url and not parsed_quark_download_url: continue
                 download_url_status = AudioLinkTester(headers=self.default_download_headers, cookies=self.default_download_cookies).test(download_url, request_overrides)
-                if not download_url_status['ok']: continue
-                download_result_suppl = AudioLinkTester(headers=self.default_download_headers, cookies=self.default_download_cookies).probe(download_url, request_overrides)
-                if download_result_suppl['ext'] == 'NULL': download_result_suppl['ext'] = download_url.split('.')[-1].split('?')[0] or 'mp3'
+                parsed_quark_download_url_status = AudioLinkTester(headers=self.quark_default_download_headers, cookies=self.default_download_cookies).test(parsed_quark_download_url, request_overrides)
+                if not download_url_status['ok'] and not parsed_quark_download_url_status['ok']: continue
+                if parsed_quark_download_url_status['ok']:
+                    download_url = parsed_quark_download_url
+                    download_url_status = parsed_quark_download_url_status
+                    download_result_suppl = AudioLinkTester(headers=self.quark_default_download_headers, cookies=self.default_download_cookies).probe(download_url, request_overrides)
+                    if download_result_suppl['ext'] == 'NULL': download_result_suppl['ext'] = 'mp3'
+                    use_quark_default_download_headers = True
+                else:
+                    download_result_suppl = AudioLinkTester(headers=self.default_download_headers, cookies=self.default_download_cookies).probe(download_url, request_overrides)
+                    if download_result_suppl['ext'] == 'NULL': download_result_suppl['ext'] = download_url.split('.')[-1].split('?')[0] or 'mp3'
+                    use_quark_default_download_headers = False
                 download_result['download_result_suppl'] = download_result_suppl
                 # --lyric results
                 try:
@@ -110,7 +128,7 @@ class GequbaoMusicClient(BaseMusicClient):
                     download_url_status=download_url_status, download_url=download_url, ext=download_result_suppl['ext'], file_size=download_result_suppl['file_size'], 
                     lyric=lyric, duration=duration, song_name=legalizestring(download_result.get('mp3_title', 'NULL'), replace_null_string='NULL'), 
                     singers=legalizestring(download_result.get('mp3_author', 'NULL'), replace_null_string='NULL'), album='NULL',
-                    identifier=download_result['play_id'],
+                    identifier=download_result['play_id'], use_quark_default_download_headers=use_quark_default_download_headers
                 )
                 # --append to song_infos
                 song_infos.append(song_info)

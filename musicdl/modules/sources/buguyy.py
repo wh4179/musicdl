@@ -90,7 +90,7 @@ class BuguyyMusicClient(BaseMusicClient):
                         parsed_quark_download_url = ''
                         continue
                 resp = self.get(f'https://a.buguyy.top/newapi/geturl2.php?id={search_result["id"]}', **request_overrides)
-                if not isvalidresp(resp=resp): continue
+                if not isvalidresp(resp=resp) and not parsed_quark_download_url: continue
                 download_result = resp2json(resp=resp)
                 download_url = safeextractfromdict(download_result, ['data', 'url'], '')
                 if not download_url and not parsed_quark_download_url: continue
