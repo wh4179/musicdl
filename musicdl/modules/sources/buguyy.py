@@ -1,34 +1,35 @@
 '''
 Function:
-    Implementation of MituMusicClient: https://www.qqmp3.vip/
+    Implementation of BuguyyMusicClient: https://buguyy.top/
 Author:
     Zhenchao Jin
 WeChat Official Account (微信公众号):
     Charles的皮卡丘
 '''
 import os
+import re
 import copy
 from .base import BaseMusicClient
 from urllib.parse import urlencode
 from rich.progress import Progress
-from ..utils import legalizestring, resp2json, usesearchheaderscookies, AudioLinkTester, WhisperLRC
+from ..utils import legalizestring, isvalidresp, usesearchheaderscookies, resp2json, safeextractfromdict, AudioLinkTester, WhisperLRC
 
 
-'''MituMusicClient'''
-class MituMusicClient(BaseMusicClient):
-    source = 'MituMusicClient'
+'''BuguyyMusicClient'''
+class BuguyyMusicClient(BaseMusicClient):
+    source = 'BuguyyMusicClient'
     def __init__(self, **kwargs):
-        super(MituMusicClient, self).__init__(**kwargs)
+        super(BuguyyMusicClient, self).__init__(**kwargs)
         self.default_search_headers = {
-            "accept": "*/*",
+            "accept": "application/json, text/plain, */*",
             "accept-encoding": "gzip, deflate, br, zstd",
             "accept-language": "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7",
-            "origin": "https://www.qqmp3.vip",
+            "origin": "https://buguyy.top",
             "priority": "u=1, i",
-            "referer": "https://www.qqmp3.vip/",
-            "sec-ch-ua": '"Chromium";v="142", "Google Chrome";v="142", "Not_A Brand";v="99"',
+            "referer": "https://buguyy.top/",
+            "sec-ch-ua": "\"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"",
             "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": '"Windows"',
+            "sec-ch-ua-platform": "\"Windows\"",
             "sec-fetch-dest": "empty",
             "sec-fetch-mode": "cors",
             "sec-fetch-site": "same-site",
@@ -44,10 +45,10 @@ class MituMusicClient(BaseMusicClient):
         # init
         rule, request_overrides = rule or {}, request_overrides or {}
         # search rules
-        default_rule = {'keyword': keyword, 'type': 'search'}
+        default_rule = {'keyword': keyword}
         default_rule.update(rule)
         # construct search urls based on search rules
-        base_url = 'https://api.qqmp3.vip/api/songs.php?'
+        base_url = 'https://a.buguyy.top/newapi/search.php?'
         page_rule = copy.deepcopy(default_rule)
         search_urls = [base_url + urlencode(page_rule)]
         self.search_size_per_page = self.search_size_per_source
@@ -63,34 +64,48 @@ class MituMusicClient(BaseMusicClient):
             # --search results
             resp = self.get(search_url, **request_overrides)
             resp.raise_for_status()
-            search_results = resp2json(resp)['data']
+            search_results = resp2json(resp=resp)['data']['list']
             for search_result in search_results:
                 # --download results
-                if 'rid' not in search_result:
+                if 'id' not in search_result:
                     continue
-                download_url: str = search_result.get('src')
+                resp = self.get(f'https://a.buguyy.top/newapi/geturl2.php?id={search_result["id"]}', **request_overrides)
+                if not isvalidresp(resp=resp): continue
+                download_result = resp2json(resp=resp)
+                download_url = safeextractfromdict(download_result, ['data', 'url'], '')
                 if not download_url: continue
                 download_url_status = AudioLinkTester(headers=self.default_download_headers, cookies=self.default_download_cookies).test(download_url, request_overrides)
                 if not download_url_status['ok']: continue
-                download_result = AudioLinkTester(headers=self.default_download_headers, cookies=self.default_download_cookies).probe(download_url, request_overrides)
-                if download_result['ext'] == 'NULL': download_result['ext'] = download_url.split('.')[-1].split('?')[0] or 'mp3'
+                download_result_suppl = AudioLinkTester(headers=self.default_download_headers, cookies=self.default_download_cookies).probe(download_url, request_overrides)
+                if download_result_suppl['ext'] == 'NULL': download_result_suppl['ext'] = download_url.split('.')[-1].split('?')[0] or 'mp3'
+                download_result['download_result_suppl'] = download_result_suppl
                 # --lyric results
-                try:
-                    if os.environ.get('ENABLE_WHISPERLRC', 'False').lower() == 'true':
-                        lyric_result = WhisperLRC(model_size_or_path='small').fromurl(
-                            download_url, headers=self.default_download_headers, cookies=self.default_download_cookies, request_overrides=request_overrides
-                        )
-                        lyric = lyric_result['lyric']
-                    else:
+                lyric = safeextractfromdict(download_result, ['data', 'lrc'], '')
+                if not lyric or '歌词获取失败' in lyric:
+                    try:
+                        if os.environ.get('ENABLE_WHISPERLRC', 'False').lower() == 'true':
+                            lyric_result = WhisperLRC(model_size_or_path='small').fromurl(
+                                download_url, headers=self.default_download_headers, cookies=self.default_download_cookies, request_overrides=request_overrides
+                            )
+                            lyric = lyric_result['lyric']
+                        else:
+                            lyric_result, lyric = dict(), 'NULL'
+                    except:
                         lyric_result, lyric = dict(), 'NULL'
-                except:
-                    lyric_result, lyric = dict(), 'NULL'
+                else:
+                    lyric_result, lyric = {'lyric': lyric}, lyric
                 # --construct song_info
+                try:
+                    duration = '{:02d}:{:02d}:{:02d}'.format(*([0,0,0] + list(map(int, re.findall(r'\d+', safeextractfromdict(download_result, ['data', 'duration'], '')))))[-3:])
+                except:
+                    duration = '-:-:-'
                 song_info = dict(
                     source=self.source, raw_data=dict(search_result=search_result, download_result=download_result, lyric_result=lyric_result), 
-                    download_url_status=download_url_status, download_url=download_url, ext=download_result['ext'], file_size=download_result['file_size'], 
-                    lyric=lyric, duration='-:-:-', song_name=legalizestring(search_result.get('name', 'NULL'), replace_null_string='NULL'), 
-                    singers=legalizestring(search_result.get('artist', 'NULL'), replace_null_string='NULL'), album='NULL', identifier=search_result['rid'],
+                    download_url_status=download_url_status, download_url=download_url, ext=download_result_suppl['ext'], file_size=download_result_suppl['file_size'], 
+                    lyric=lyric, duration=duration, song_name=legalizestring(search_result.get('title', 'NULL'), replace_null_string='NULL'), 
+                    singers=legalizestring(search_result.get('singer', 'NULL'), replace_null_string='NULL'), 
+                    album=legalizestring(safeextractfromdict(download_result, ['data', 'album'], ''), replace_null_string='NULL'),
+                    identifier=search_result['id'],
                 )
                 # --append to song_infos
                 song_infos.append(song_info)

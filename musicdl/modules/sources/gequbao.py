@@ -82,7 +82,7 @@ class GequbaoMusicClient(BaseMusicClient):
                 download_url_status = AudioLinkTester(headers=self.default_download_headers, cookies=self.default_download_cookies).test(download_url, request_overrides)
                 if not download_url_status['ok']: continue
                 download_result_suppl = AudioLinkTester(headers=self.default_download_headers, cookies=self.default_download_cookies).probe(download_url, request_overrides)
-                if download_result_suppl['ext'] == 'NULL': download_result_suppl['ext'] = 'mp3'
+                if download_result_suppl['ext'] == 'NULL': download_result_suppl['ext'] = download_url.split('.')[-1].split('?')[0] or 'mp3'
                 download_result['download_result_suppl'] = download_result_suppl
                 # --lyric results
                 try:

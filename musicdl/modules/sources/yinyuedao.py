@@ -90,7 +90,7 @@ class YinyuedaoMusicClient(BaseMusicClient):
                 download_url_status = AudioLinkTester(headers=self.default_download_headers, cookies=self.default_download_cookies).test(download_url, request_overrides)
                 if not download_url_status['ok']: continue
                 download_result = AudioLinkTester(headers=self.default_download_headers, cookies=self.default_download_cookies).probe(download_url, request_overrides)
-                if download_result['ext'] == 'NULL': download_result['ext'] = 'mp3'
+                if download_result['ext'] == 'NULL': download_result['ext'] = download_url.split('.')[-1].split('?')[0] or 'mp3'
                 # --lyric results
                 try:
                     if os.environ.get('ENABLE_WHISPERLRC', 'False').lower() == 'true':
