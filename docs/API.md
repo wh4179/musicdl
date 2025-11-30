@@ -174,7 +174,7 @@ Arguments supported when initializing this class include:
 - **quark_parser_config** (`dict` or `None`, default `{}`):  
   Some sites, such as `MituMusicClient`, `GequbaoMusicClient`, `YinyuedaoMusicClient`, and `BuguyyMusicClient`, 
   store their lossless audio files on [Quark Netdisk](https://pan.quark.cn/). 
-  For these websites, if you want to download lossless-quality music files using `musicdl`, 
+  For these websites, if you want to download lossless-quality music files using musicdl, 
   you need to configure `quark_parser_config` with the `cookies` from your Quark Netdisk web session after logging in, *e.g.*,
   `quark_parser_config={'cookies': xxxxxx}`.
 
