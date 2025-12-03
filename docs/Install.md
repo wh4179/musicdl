@@ -65,3 +65,4 @@ These CLI tools include [FFmpeg](https://www.ffmpeg.org/) and [Node.js](https://
   ```bash
   python -c "import shutil; print(shutil.which('N_m3u8DL-RE'))"
   ```
+  in Command Prompt and get the full path without an error. 
