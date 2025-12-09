@@ -6,12 +6,11 @@ Author:
 WeChat Official Account (微信公众号):
     Charles的皮卡丘
 '''
-import os
 import json_repair
 from bs4 import BeautifulSoup
 from .base import BaseMusicClient
 from rich.progress import Progress
-from ..utils import legalizestring, isvalidresp, usesearchheaderscookies, usedownloadheaderscookies, safeextractfromdict, AudioLinkTester, WhisperLRC, QuarkParser
+from ..utils import legalizestring, usesearchheaderscookies, safeextractfromdict, SongInfo, QuarkParser
 
 
 '''YinyuedaoMusicClient'''
@@ -41,14 +40,6 @@ class YinyuedaoMusicClient(BaseMusicClient):
         }
         self.default_headers = self.default_search_headers
         self._initsession()
-    '''_download'''
-    @usedownloadheaderscookies
-    def _download(self, song_info: dict, request_overrides: dict = None, downloaded_song_infos: list = [], progress: Progress = None, song_progress_id: int = 0):
-        if song_info['use_quark_default_download_headers']:
-            request_overrides['headers'] = self.quark_default_download_headers
-            return super()._download(song_info=song_info, request_overrides=request_overrides, downloaded_song_infos=downloaded_song_infos, progress=progress, song_progress_id=song_progress_id)
-        else:
-            return super()._download(song_info=song_info, request_overrides=request_overrides, downloaded_song_infos=downloaded_song_infos, progress=progress, song_progress_id=song_progress_id)
     '''_constructsearchurls'''
     def _constructsearchurls(self, keyword: str, rule: dict = None, request_overrides: dict = None):
         # init
@@ -90,55 +81,56 @@ class YinyuedaoMusicClient(BaseMusicClient):
             search_results = self._parsesearchresultsfromhtml(resp.text)
             for search_result in search_results:
                 # --download results
-                if 'id' not in search_result:
+                if not isinstance(search_result, dict) or ('id' not in search_result):
                     continue
-                quark_download_urls, parsed_quark_download_url = [*search_result.get('downlist', []), *search_result.get('ktmdownlist', [])], ''
-                for quark_download_url in quark_download_urls:
-                    song_fmt = safeextractfromdict(quark_download_url, ['format'], '') 
-                    if not song_fmt or song_fmt.lower() in ['mp3']: continue
+                song_info = SongInfo(source=self.source)
+                # ----parse from quark links
+                if self.quark_parser_config.get('cookies'):
+                    quark_download_urls = [*search_result.get('downlist', []), *search_result.get('ktmdownlist', [])]
+                    for quark_download_url in quark_download_urls:
+                        song_fmt = safeextractfromdict(quark_download_url, ['format'], '')
+                        if not song_fmt or song_fmt.lower() in ['mp3']: continue
+                        song_info = SongInfo(source=self.source)
+                        try:
+                            quark_wav_download_url = quark_download_url['url']
+                            download_result, download_url = QuarkParser.parsefromurl(quark_wav_download_url, **self.quark_parser_config)
+                            if not download_url: continue
+                            download_url_status = self.quark_audio_link_tester.test(download_url, request_overrides)
+                            download_url_status['probe_status'] = self.quark_audio_link_tester.probe(download_url, request_overrides)
+                            ext = download_url_status['probe_status']['ext']
+                            if ext == 'NULL': ext = 'flac'
+                            song_info.update(dict(
+                                download_url=download_url, download_url_status=download_url_status, raw_data={'search': search_result, 'download': download_result},
+                                default_download_headers=self.quark_default_download_headers, ext=ext, file_size=download_url_status['probe_status']['file_size']
+                            ))
+                            if song_info.with_valid_download_url: break
+                        except:
+                            continue
+                # ----parse from play url
+                if not song_info.with_valid_download_url:
+                    song_info = SongInfo(source=self.source)
                     try:
-                        quark_wav_download_url = quark_download_url['url']
-                        parsed_quark_download_url = QuarkParser.parsefromurl(quark_wav_download_url, **self.quark_parser_config)
-                        break
+                        resp = self.get(f'https://1mp3.top/include/geturl.php?id={search_result["id"]}', **request_overrides)
+                        resp.raise_for_status()
+                        download_url = resp.text.strip()
+                        download_url_status = self.audio_link_tester.test(download_url, request_overrides)
+                        download_url_status['probe_status'] = self.audio_link_tester.probe(download_url, request_overrides)
+                        ext = download_url_status['probe_status']['ext']
+                        if ext == 'NULL': download_url.split('.')[-1].split('?')[0] or 'mp3'
+                        song_info.update(dict(
+                            download_url=download_url, download_url_status=download_url_status, raw_data={'search': search_result, 'download': {}},
+                            ext=ext, file_size=download_url_status['probe_status']['file_size']
+                        ))
                     except:
-                        parsed_quark_download_url = ''
                         continue
-                resp = self.get(f'https://1mp3.top/include/geturl.php?id={search_result["id"]}', **request_overrides)
-                if not isvalidresp(resp=resp) and not parsed_quark_download_url: continue
-                download_url = resp.text.strip()
-                if not download_url and not parsed_quark_download_url: continue
-                download_url_status = AudioLinkTester(headers=self.default_download_headers, cookies=self.default_download_cookies).test(download_url, request_overrides)
-                parsed_quark_download_url_status = AudioLinkTester(headers=self.quark_default_download_headers, cookies=self.default_download_cookies).test(parsed_quark_download_url, request_overrides)
-                if not download_url_status['ok'] and not parsed_quark_download_url_status['ok']: continue
-                if parsed_quark_download_url_status['ok']:
-                    download_url = parsed_quark_download_url
-                    download_url_status = parsed_quark_download_url_status
-                    download_result = AudioLinkTester(headers=self.quark_default_download_headers, cookies=self.default_download_cookies).probe(download_url, request_overrides)
-                    if download_result['ext'] == 'NULL': download_result['ext'] = 'flac'
-                    use_quark_default_download_headers = True
-                else:
-                    download_result = AudioLinkTester(headers=self.default_download_headers, cookies=self.default_download_cookies).probe(download_url, request_overrides)
-                    if download_result['ext'] == 'NULL': download_result['ext'] = download_url.split('.')[-1].split('?')[0] or 'mp3'
-                    use_quark_default_download_headers = False
-                # --lyric results
-                try:
-                    if os.environ.get('ENABLE_WHISPERLRC', 'False').lower() == 'true':
-                        lyric_result = WhisperLRC(model_size_or_path='small').fromurl(
-                            download_url, headers=self.default_download_headers, cookies=self.default_download_cookies, request_overrides=request_overrides
-                        )
-                        lyric = lyric_result['lyric']
-                    else:
-                        lyric_result, lyric = dict(), 'NULL'
-                except:
-                    lyric_result, lyric = dict(), 'NULL'
-                # --construct song_info
-                song_info = dict(
-                    source=self.source, raw_data=dict(search_result=search_result, download_result=download_result, lyric_result=lyric_result), 
-                    download_url_status=download_url_status, download_url=download_url, ext=download_result['ext'], file_size=download_result['file_size'], 
+                if not song_info.with_valid_download_url: continue
+                # ----parse more infos
+                lyric_result, lyric = dict(), 'NULL'
+                song_info.raw_data['lyric'] = lyric_result
+                song_info.update(dict(
                     lyric=lyric, duration='-:-:-', song_name=legalizestring(search_result.get('title', 'NULL'), replace_null_string='NULL'), 
-                    singers=legalizestring(search_result.get('singer', 'NULL'), replace_null_string='NULL'), album='NULL',
-                    identifier=search_result['id'], use_quark_default_download_headers=use_quark_default_download_headers,
-                )
+                    singers=legalizestring(search_result.get('singer', 'NULL'), replace_null_string='NULL'), album='NULL', identifier=search_result['id'],
+                ))
                 # --append to song_infos
                 song_infos.append(song_info)
                 # --judgement for search_size
