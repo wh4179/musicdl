@@ -81,8 +81,8 @@ class LizhiMusicClient(BaseMusicClient):
                 song_info.update(
                     duration=seconds2hms(search_result['voiceInfo'].get('duration', 0)), duration_s=search_result['voiceInfo'].get('duration', 0)
                 )
-                song_info.download_url_status['prob_status'] = self.audio_link_tester.probe(song_info.download_url, request_overrides)
-                ext, file_size = song_info.download_url_status['prob_status']['ext'], song_info.download_url_status['prob_status']['file_size']
+                song_info.download_url_status['probe_status'] = self.audio_link_tester.probe(song_info.download_url, request_overrides)
+                ext, file_size = song_info.download_url_status['probe_status']['ext'], song_info.download_url_status['probe_status']['file_size']
                 if file_size and file_size != 'NULL': song_info.file_size = file_size
                 if not song_info.file_size: song_info.file_size = 'NULL'
                 if ext and ext != 'NULL': song_info.ext = ext

@@ -104,12 +104,12 @@ class YinyuedaoMusicClient(BaseMusicClient):
                             download_result, download_url = QuarkParser.parsefromurl(quark_wav_download_url, **self.quark_parser_config)
                             if not download_url: continue
                             download_url_status = self.quark_audio_link_tester.test(download_url, request_overrides)
-                            download_url_status['prob_status'] = self.quark_audio_link_tester.probe(download_url, request_overrides)
-                            ext = download_url_status['prob_status']['ext']
+                            download_url_status['probe_status'] = self.quark_audio_link_tester.probe(download_url, request_overrides)
+                            ext = download_url_status['probe_status']['ext']
                             if ext == 'NULL': ext = 'flac'
                             song_info.update(dict(
                                 download_url=download_url, download_url_status=download_url_status, raw_data={'search': search_result, 'download': download_result},
-                                use_quark_default_download_headers=True, ext=ext, file_size=download_url_status['prob_status']['file_size']
+                                use_quark_default_download_headers=True, ext=ext, file_size=download_url_status['probe_status']['file_size']
                             ))
                             if song_info.with_valid_download_url: break
                         except:
@@ -122,12 +122,12 @@ class YinyuedaoMusicClient(BaseMusicClient):
                         resp.raise_for_status()
                         download_url = resp.text.strip()
                         download_url_status = self.audio_link_tester.test(download_url, request_overrides)
-                        download_url_status['prob_status'] = self.audio_link_tester.probe(download_url, request_overrides)
-                        ext = download_url_status['prob_status']['ext']
+                        download_url_status['probe_status'] = self.audio_link_tester.probe(download_url, request_overrides)
+                        ext = download_url_status['probe_status']['ext']
                         if ext == 'NULL': download_url.split('.')[-1].split('?')[0] or 'mp3'
                         song_info.update(dict(
                             download_url=download_url, download_url_status=download_url_status, raw_data={'search': search_result, 'download': {}},
-                            use_quark_default_download_headers=False, ext=ext, file_size=download_url_status['prob_status']['file_size']
+                            use_quark_default_download_headers=False, ext=ext, file_size=download_url_status['probe_status']['file_size']
                         ))
                     except:
                         continue
