@@ -66,7 +66,7 @@ class MP3JuiceMusicClient(BaseMusicClient):
                 fp.write(song_info.downloaded_contents)
             progress.advance(song_progress_id, total_size)
             progress.update(song_progress_id, description=f"{self.source}.download >>> {song_info.song_name} (Success)")
-            downloaded_song_infos.append(MusicInfoUtils.fillsongtechinfo(copy.deepcopy(song_info)))
+            downloaded_song_infos.append(MusicInfoUtils.fillsongtechinfo(copy.deepcopy(song_info), logger_handle=self.logger_handle, disable_print=self.disable_print))
         except Exception as err:
             progress.update(song_progress_id, description=f"{self.source}.download >>> {song_info.song_name} (Error: {err})")
         return downloaded_song_infos
