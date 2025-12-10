@@ -144,7 +144,5 @@ class BuguyyMusicClient(BaseMusicClient):
         # failure
         except Exception as err:
             progress.update(progress_id, description=f"{self.source}.search >>> {search_url} (Error: {err})")
-        # advance progress
-        progress.advance(progress_id, 1)
         # return
         return song_infos
