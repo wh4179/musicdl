@@ -1,5 +1,7 @@
 # Release Log
 
+- 2025-12-19: Released musicdl v2.7.4 — supports music search and download using TuneHubMusicClient.
+
 - 2025-12-17: Released musicdl v2.7.3 — supports native Bilibili music search and downloads, improves the search speed of some third-party APIs, refactors the Ximalaya music platform code, and includes several other minor code optimizations.
 
 - 2025-12-15: Released musicdl v2.7.2 — added support for jamendo and make some improvements.

@@ -8,10 +8,10 @@ A unified interface encapsulated for all supported music platforms. Arguments su
 - **music_sources** (`list[str]`, optional):  A list of music client names to be enabled. 
   Each name must be a key registered in `MusicClientBuilder.REGISTERED_MODULES`.  
   If left empty, the following default sources are used:  
-  `['MituMusicClient', 'GequbaoMusicClient', 'YinyuedaoMusicClient', 'BuguyyMusicClient', 'MP3JuiceMusicClient']`.
+  `['MiguMusicClient', 'NeteaseMusicClient', 'QQMusicClient', 'KugouMusicClient', 'KuwoMusicClient', 'QianqianMusicClient']`.
 
 - **init_music_clients_cfg** (`dict[str, dict]`, optional): Per-client initialization configuration.  
-  The outer dict is keyed by music source name (e.g. `"NeteaseMusicClient"`), and each value is a dict that overrides the default config:
+  The outer dict is keyed by music source name (*e.g.*, `"NeteaseMusicClient"`), and each value is a dict that overrides the default config:
   ```python
   {
       "search_size_per_source": 5,
@@ -43,7 +43,7 @@ A unified interface encapsulated for all supported music platforms. Arguments su
   If a source is missing from this dict, it defaults to an empty dict `{}`.
 
 - **search_rules** (`dict[str, dict]`, optional): Per-client search rules.
-  Keys are music source names; values are dicts passed as `rule` to the clients’ `search` method to control source-specific search behavior (e.g., quality filters, sort rules, etc., depending on the implementation of each client).
+  Keys are music source names; values are dicts passed as `rule` to the clients’ `search` method to control source-specific search behavior (*e.g.*, quality filters, sort rules, *etc.*, depending on the implementation of each client).
   If a source is missing from this dict, it defaults to an empty dict `{}`.
 
 Once initialized, `MusicClient` exposes high-level `search` and `download` methods that automatically dispatch requests to all configured music sources.
@@ -54,11 +54,11 @@ Start an interactive command-line interface for searching and downloading music.
 
 This method:
 
-1. Prints basic usage information (version, save paths, etc.).
+1. Prints basic usage information (version, save paths, *etc.*.).
 2. Prompts the user to input keywords for music search.
 3. Calls `MusicClient.search()` to retrieve search results from all configured music sources.
 4. Displays a formatted table of candidate songs with IDs.
-5. Prompts the user to select one or multiple IDs (e.g. `"1,2,5"`).
+5. Prompts the user to select one or multiple IDs (*e.g.*, `"1,2,5"`).
 6. Collects the corresponding song info entries and calls `MusicClient.download()` to download them.
 
 Special commands:
@@ -76,7 +76,7 @@ Each per-source result is a list of song info dictionaries, which typically incl
 
 - **Arguments**:
 
-  - **keyword** (`str`): Search keyword, *e.g.*, song name, artist name, *etc*.
+  - **keyword** (`str`): Search keyword, *e.g.*, song name, artist name, *etc.*.
 
 - **Returns**:
   
@@ -123,6 +123,7 @@ Thread settings and request overrides are automatically taken from `MusicClient.
 - `musicdl.modules.sources.jamendo.JamendoMusicClient`
 - `musicdl.modules.sources.bilibili.BilibiliMusicClient`
 - `musicdl.modules.common.GDStudioMusicClient`
+- `musicdl.modules.common.TuneHubMusicClient`
 
 End users usually **do not** instantiate `BaseMusicClient` directly, but instead use one of the specific clients above.
 The methods documented here describe the common behavior of all these clients.
@@ -184,24 +185,24 @@ Arguments supported when initializing this class include:
 
 #### `BaseMusicClient.search(keyword: str, num_threadings=5, request_overrides=None, rule=None)`
 
-Search for songs using the specific music platform (e.g., Netease, Kugou, QQ, etc.).
+Search for songs using the specific music platform (*e.g.*, Netease, Kugou, QQ, *etc.*.).
 
 - **Arguments**:
 
-  - **keyword** (`str`):  Search keyword (e.g., song name, artist, album).
+  - **keyword** (`str`):  Search keyword (*e.g.*, song name, artist, album).
   
   - **num_threadings** (`int`, default `5`): Number of threads used to perform the search across all constructed URLs.
 
-  - **request_overrides** (`dict` or `None`, default `{}`): Extra keyword arguments passed to the underlying HTTP requests (e.g., `headers`, `proxies`, `timeout`). If `None`, treated as an empty dict.
+  - **request_overrides** (`dict` or `None`, default `{}`): Extra keyword arguments passed to the underlying HTTP requests (*e.g.*, `headers`, `proxies`, `timeout`). If `None`, treated as an empty dict.
 
-  - **rule** (`dict` or `None`, default `{}`): Search rules used by `BaseMusicClient._constructsearchurls`, e.g., quality filters, sort rules, or other client-specific options. If `None`, treated as an empty dict.
+  - **rule** (`dict` or `None`, default `{}`): Search rules used by `BaseMusicClient._constructsearchurls`, *e.g.*, quality filters, sort rules, or other client-specific options. If `None`, treated as an empty dict.
 
 - **Returns**:
 
   - `list[SongInfo]`:  A list of `song_info` dictionaries. Each dictionary usually contains (but is not limited to):
     `identifier` (used internally for deduplication), `song_name`, `singers`, `album`, `duration`, `file_size`, `download_url`, `ext`, `source`, `work_dir` (added by `BaseMusicClient.search()`).
 
-Concrete clients like `NeteaseMusicClient`, `QQMusicClient`, etc., implement `BaseMusicClient._constructsearchurls()` and `BaseMusicClient._search()` to define how the search is actually performed for each platform.
+Concrete clients like `NeteaseMusicClient`, `QQMusicClient`, *etc.*, implement `BaseMusicClient._constructsearchurls()` and `BaseMusicClient._search()` to define how the search is actually performed for each platform.
 
 #### `BaseMusicClient.download(song_infos: list, num_threadings=5, request_overrides=None)`
 
@@ -213,7 +214,7 @@ Download one or more songs from the specific music platform.
   
   - **num_threadings** (`int`, default `5`): Number of threads used for concurrent downloading.
   
-  - **request_overrides** (`dict` or `None`, default `{}`): Extra keyword arguments passed to the underlying `BaseMusicClient.get()` method (e.g., `headers`, `proxies`, `timeout`). If `None`, treated as an empty dict.
+  - **request_overrides** (`dict` or `None`, default `{}`): Extra keyword arguments passed to the underlying `BaseMusicClient.get()` method (*e.g.*, `headers`, `proxies`, `timeout`). If `None`, treated as an empty dict.
   
 - **Returns**:
 

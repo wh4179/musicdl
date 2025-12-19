@@ -377,7 +377,7 @@ Or, equivalently, run the following command in the command line:
 musicdl -m GDStudioMusicClient
 ```
 
-By default, the above code will search for and download music from nine music platforms, excluding YouTube Music.
+By default, the above code will search for and download music from nine music platforms, excluding YouTube Music (as using `GDStudioMusicClient` for search and download on this platform seems to be unstable).
 The screenshot of the running result is as follows:
 
 <div align="center">
@@ -420,3 +420,39 @@ The way to run it from the command line is similar:
 ```bash
 musicdl -m GDStudioMusicClient -i "{'GDStudioMusicClient': {'search_size_per_source': 5, 'allowed_music_sources': ['spotify', 'qobuz', 'tidal', 'apple']}}"
 ```
+
+#### TuneHub Music Download
+
+`TuneHubMusicClient` is actually quite similar to `GDStudioMusicClient`, as it allows music search and download from multiple music platforms. 
+However, it primarily supports music platforms in Mainland China and offers fewer music sources compared to `GDStudioMusicClient`. 
+Specifically, the list of platforms it currently supports is as follows:
+
+| Source (EN)             | Source (CN)                        | Official Websites                     | `allowed_music_sources`      |
+| -----------------       | -------------------                | -----------------------------------   | -------------------          |
+| Tencent (QQ Music)      | QQ音乐                             | https://y.qq.com                      | `qq`                         |
+| NetEase Cloud Music     | 网易云音乐                         | https://music.163.com                 | `netease`                    |
+| Kuwo                    | 酷我音乐                           | https://www.kuwo.cn                   | `kuwo`                       |
+
+Specifically, you can call it using the following code:
+
+```python
+from musicdl import musicdl
+
+music_client = musicdl.MusicClient(music_sources=['TuneHubMusicClient'])
+music_client.startcmdui()
+```
+
+Alternatively, you can directly run the following command in the terminal:
+
+```python
+musicdl -m TuneHubMusicClient
+```
+
+The screenshot of the running result is as follows:
+
+<div align="center">
+  <div>
+    <img src="https://github.com/CharlesPikachu/musicdl/raw/master/docs/tunehubscreenshot.png" width="600"/>
+  </div>
+</div>
+<br />
