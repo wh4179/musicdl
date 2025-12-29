@@ -106,6 +106,7 @@ Thread settings and request overrides are automatically taken from `MusicClient.
 - `musicdl.modules.sources.BuguyyMusicClient`
 - `musicdl.modules.sources.FangpiMusicClient`
 - `musicdl.modules.sources.FiveSingMusicClient`
+- `musicdl.modules.sources.FiveSongMusicClient`
 - `musicdl.modules.sources.GequbaoMusicClient`
 - `musicdl.modules.sources.GequhaiMusicClient`
 - `musicdl.modules.sources.HTQYYMusicClient`
