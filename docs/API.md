@@ -130,6 +130,7 @@ Thread settings and request overrides are automatically taken from `MusicClient.
 - `musicdl.modules.sources.YouTubeMusicClient`
 - `musicdl.modules.common.GDStudioMusicClient`
 - `musicdl.modules.common.MP3JuiceMusicClient`
+- `musicdl.modules.common.MyFreeMP3MusicClient`
 - `musicdl.modules.common.TuneHubMusicClient`
 
 End users usually **do not** instantiate `BaseMusicClient` directly, but instead use one of the specific clients above.
