@@ -35,8 +35,14 @@ class GequhaiMusicClient(BaseMusicClient):
         # init
         rule, request_overrides = rule or {}, request_overrides or {}
         # construct search urls
-        search_urls = [f'https://www.gequhai.com/s/{keyword}']
-        self.search_size_per_page = self.search_size_per_source
+        self.search_size_per_page = min(self.search_size_per_source, 12)
+        search_urls, page_size, count = [], self.search_size_per_page, 0
+        while self.search_size_per_source > count:
+            if int(count // page_size) + 1 == 1:
+                search_urls.append(f'https://www.gequhai.com/s/{keyword}')
+            else:
+                search_urls.append(f'https://www.gequhai.com/s/{keyword}?page={int(count // page_size) + 1}')
+            count += page_size
         # return
         return search_urls
     '''_parsesearchresultsfromhtml'''

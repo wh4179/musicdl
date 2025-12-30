@@ -40,14 +40,12 @@ class KKWSMusicClient(BaseMusicClient):
     def _constructsearchurls(self, keyword: str, rule: dict = None, request_overrides: dict = None):
         # init
         rule, request_overrides = rule or {}, request_overrides or {}
-        # search rules
-        default_rule = {'key': keyword, 'search': '1'}
-        default_rule.update(rule)
-        # construct search urls based on search rules
-        base_url = 'https://www.kkws.cc/search.html?'
-        page_rule = copy.deepcopy(default_rule)
-        search_urls = [base_url + urlencode(page_rule)]
-        self.search_size_per_page = self.search_size_per_source
+        # construct search urls
+        self.search_size_per_page = min(self.search_size_per_source, 15)
+        search_urls, page_size, count = [], self.search_size_per_page, 0
+        while self.search_size_per_source > count:
+            search_urls.append(f'https://www.kkws.cc/search.html?key={keyword}&page={int(count // page_size) + 1}')
+            count += page_size
         # return
         return search_urls
     '''_parsesearchresultsfromhtml'''

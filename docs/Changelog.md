@@ -1,5 +1,7 @@
 # Release Log
 
+- 2025-12-29: Released musicdl v2.8.1 — support more lossless-music sharing sites, and add pagination support for some of the sites that were already supported.
+
 - 2025-12-29: Released musicdl v2.8.0 — added support for two additional sites, improved the search speed, stability and metadata completeness when fetching lossless tracks from some sites, and optimized certain default arguments (prioritize search speed).
 
 - 2025-12-24: Released musicdl v2.7.6 — add support for MissEvan FM, and fix bugs on the Gequhai site.
