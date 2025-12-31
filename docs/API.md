@@ -22,7 +22,7 @@ A unified interface encapsulated for all supported music platforms. Arguments su
       "logger_handle": LoggerHandle(),
       "disable_print": True,
       "work_dir": "musicdl_outputs",
-      "proxy_sources": None,
+      "freeproxy_settings": None,
       "default_search_cookies": {},
       "default_download_cookies": {},
       "type": music_source,
@@ -143,7 +143,7 @@ Arguments supported when initializing this class include:
   Maximum number of search results to fetch per source.
   
 - **auto_set_proxies** (`bool`, default `False`):  
-  If `True`, automatically obtain proxies from `proxy_sources` using `freeproxy.ProxiedSessionClient` (details refer to [FreeProxy](https://github.com/CharlesPikachu/freeproxy/tree/master)) for each request.
+  If `True`, randomly assign a free proxy fetched by `freeproxy.ProxiedSessionClient` (details refer to [FreeProxy](https://github.com/CharlesPikachu/freeproxy/tree/master)) for each request.
 
 - **random_update_ua** (`bool`, default `False`):  
   If `True`, randomly refresh the `User-Agent` header on each request.
@@ -160,15 +160,15 @@ Arguments supported when initializing this class include:
   If `None`, a new `LoggerHandle` is created.
 
 - **disable_print** (`bool`, default `False`):  
-  If `True`, suppress printing in logger calls where supported.
+  If `True`, suppress printing in `logger_handle` calls where supported.
 
 - **work_dir** (`str`, default `'musicdl_outputs'`):  
   Root directory for saving search and download results.  
   Each search will create its own subdirectory under this path.
 
-- **proxy_sources** (`list[str]` or `None`, default `None`):  
-  A list of proxy source names for `freeproxy.ProxiedSessionClient`.  
-  If `None`, defaults to `['QiyunipProxiedSession']` when `auto_set_proxies=True`.
+- **freeproxy_settings** (`dict` or `None`, default `None`):  
+  Arguments passed when instantiating `freeproxy.ProxiedSessionClient`.  
+  If `None`, defaults to `dict(disable_print=True, proxy_sources=['ProxiflyProxiedSession'], max_retries=20, init_proxied_session_cfg={})` when `auto_set_proxies=True`.
 
 - **default_search_cookies** (`dict` or `None`, default `{}`):  
   Default cookies used for `BaseMusicClient.search` requests.
