@@ -168,7 +168,7 @@ Arguments supported when initializing this class include:
 
 - **freeproxy_settings** (`dict` or `None`, default `None`):  
   Arguments passed when instantiating `freeproxy.ProxiedSessionClient`.  
-  If `None`, defaults to `dict(disable_print=True, proxy_sources=['ProxiflyProxiedSession'], max_retries=20, init_proxied_session_cfg={})` when `auto_set_proxies=True`.
+  If `None`, defaults to `dict(disable_print=True, proxy_sources=['ProxiflyProxiedSession'], max_tries=20, init_proxied_session_cfg={})` when `auto_set_proxies=True`.
 
 - **default_search_cookies** (`dict` or `None`, default `{}`):  
   Default cookies used for `BaseMusicClient.search` requests.
