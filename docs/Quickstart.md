@@ -390,7 +390,9 @@ With only the basic installation of musicdl, you can search for and download hig
 | Apple Music             | 苹果音乐                           | https://www.apple.com/apple-music/    | `apple`                      |
 | YouTube Music           | 油管音乐                           | https://music.youtube.com             | `ytmusic`                    |
 
-Specifically, you just need to write and run a few lines of code like this:
+Specifically, you just need to write and run a few lines of code like this 
+(song retrieval from YouTube and Tencent is unstable, so musicdl disables these two sources by default. 
+You can manually enable them by setting `allowed_music_sources`.):
 
 ```python
 from musicdl import musicdl
