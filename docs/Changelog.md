@@ -1,6 +1,8 @@
 # Release Log
 
-- 2026-01-26: Released musicdl v2.8.8 — Added a new lossless music search and download site, implemented a Lanzou Cloud direct-download link parser, and performed partial code optimizations.
+- 2026-01-28: Released musicdl v2.8.9 — add auto-tagging, integrate shared premium APIs for specific platforms, and hotfix TuneHub.
+
+- 2026-01-26: Released musicdl v2.8.8 — added a new lossless music search and download site, implemented a Lanzou Cloud direct-download link parser, and performed partial code optimizations.
 
 - 2026-01-22: Released musicdl v2.8.7 — refactor the code for three music platforms (*i.e.*, YouTube, Joox, and Jamendo) to retrieve higher-quality audio from each platform.
 
