@@ -309,7 +309,56 @@ If you need to download paid audio, please configure cookies in `init_music_clie
 
 #### QingtingFM Audio/Radio Download
 
+The usage for searching and downloading on the QingTing FM website is similar to Ximalaya and Lizhi FM. 
+The only thing to watch out for is how cookies are set, it differs from typical music client objects.
 
+Specifically, without logging in (*i.e.*, when you don’t need to download paid audio), you can invoke it by running `musicdl -m QingtingMusicClient` in the command line, or by calling it via the following code:
+
+```python
+from musicdl import musicdl
+
+# only search by track
+init_music_clients_cfg = {'QingtingMusicClient': {'search_size_per_source': 2, 'allowed_search_types': ['track']}}
+# only search by album
+init_music_clients_cfg = {'QingtingMusicClient': {'search_size_per_source': 2, 'allowed_search_types': ['album']}}
+# search by album and track
+init_music_clients_cfg = {'QingtingMusicClient': {'search_size_per_source': 2, 'allowed_search_types': ['album', 'track']}}
+# instance music_client
+music_client = musicdl.MusicClient(music_sources=['QingtingMusicClient'], init_music_clients_cfg=init_music_clients_cfg)
+# start
+music_client.startcmdui()
+```
+
+When you need to download paid audio, you’ll have to capture the network traffic yourself on the [QingTing FM web client](https://www.qtfm.cn/).
+Look for an AJAX request with the keyword `auth`, its response data will look like:
+
+```python
+{
+  "errorno": 0,
+  "errormsg": "",
+  "data": {
+    "qingting_id": "xxxx",
+    "access_token": "xxx",
+    "refresh_token": "xxx",
+    "expires_in": 7200
+  }
+}
+```
+
+Or, use the script [build_cookies_for_qingtingfm.py](https://github.com/CharlesPikachu/musicdl/tree/master/scripts/build_cookies_for_qingtingfm) in this repository to retrieve it.
+
+Once you’ve obtained this data, you can configure cookies for `QingtingMusicClient` as follows:
+
+```python
+from musicdl import musicdl
+
+cookies = {"qingting_id": "xxxx", "access_token": "xxx", "refresh_token": "xxx"}
+init_music_clients_cfg = {'QingtingMusicClient': {'default_search_cookies': cookies, 'default_download_cookies': cookies, 'search_size_per_source': 3}}
+music_client = musicdl.MusicClient(music_sources=['QingtingMusicClient'], init_music_clients_cfg=init_music_clients_cfg)
+music_client.startcmdui()
+```
+
+Of course, it’s worth noting that another prerequisite for downloading paid audio is that your account must already have permission to access (listen to) that audio.
 
 #### TIDAL High-Quality Music Download
 
