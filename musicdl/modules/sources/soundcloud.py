@@ -28,8 +28,8 @@ class SoundCloudMusicClient(BaseMusicClient):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0",
         }
         self.default_headers = self.default_search_headers
-        if self.default_search_cookies: self.default_search_headers.update({'Authorization': f'OAuth {self.default_cookies["oauth_token"]}'})
-        if self.default_download_cookies: self.default_download_headers.update({'Authorization': f'OAuth {self.default_cookies["oauth_token"]}'})
+        if self.default_search_cookies: self.default_search_headers.update({'Authorization': self.default_cookies["oauth_token"]})
+        if self.default_download_cookies: self.default_download_headers.update({'Authorization': self.default_cookies["oauth_token"]})
         self._initsession()
     '''_updateclientid'''
     def _updateclientid(self, request_overrides: dict = None):
