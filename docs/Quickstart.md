@@ -60,6 +60,11 @@ Options:
   -k, --keyword TEXT              The keywords for the music search. If left
                                   empty, an interactive terminal will open
                                   automatically.
+  -p, --playlist-url, --playlist_url TEXT
+                                  Given a playlist URL, e.g., "https://music.1
+                                  63.com/#/playlist?id=7583298906", musicdl
+                                  automatically parses the playlist and
+                                  downloads all tracks in it.
   -m, --music-sources, --music_sources TEXT
                                   The music search and download sources.
                                   [default: MiguMusicClient,NeteaseMusicClient
